@@ -1,6 +1,6 @@
 clear; clf;
 N = 1024;
-win = window('hanning', N);
+win = window('hamming', N);
 Pscale = 1;
 Fscale = 32;
 zero_padding = 2;
@@ -30,11 +30,11 @@ graphics = zeros(zero_padding*N/Fscale, k);
 for i = 1:k
 	y=x(N*i+1:(i+1)*N).*win;
     f=fft(y, zero_padding*N);
-    DEP=(1/N)*(abs(f)).^2;
-    graphics(1:zero_padding*N/Fscale, i)=DEP(1:zero_padding*N/Fscale);
+    PSD=(1/N)*(abs(f)).^2;
+    graphics(1:zero_padding*N/Fscale, i)=PSD(1:zero_padding*N/Fscale);
     
-%     DEP(1:30) = zeros(1, 30);
-%     cestrum = abs(fft(DEP));
+%     PSD(1:30) = zeros(1, 30);
+%     cestrum = abs(fft(PSD));
 %     cestrum = cestrum/cestrum(1);
 %     graphics(1:zero_padding*N/Fscale, i)=cestrum(1:zero_padding*N/Fscale);
 end
