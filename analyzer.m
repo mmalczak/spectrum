@@ -13,7 +13,7 @@ end
 % x=x(1:end/16);
 x=x(Fs*10:Fs*20);
 % x=x-mean(x);
-
+x_orig = x;
 Nwin=floor(numel(x)/N)-1;
 
 F_axis=(0:1/(zero_padding*N):1-1/(zero_padding*N))*Fs;
@@ -27,6 +27,19 @@ Pmax = Pscale*Pmedium/Nwin;
 
 graphics = zeros(zero_padding*N/Fscale, Nwin);
 graphics_maximums = zeros(1, Nwin);
+
+%% loudnes filter
+A_Butterworth = [1.0000 -1.9698 0.9702]
+B_Butterworth = [0.9850 -1.9700 0.9850];
+A_YuleWalkk = [1.0000 -3.4785 6.3632 -8.5475 9.4769 -8.8150 6.8540 -4.3947 2.1961 -0.7510 0.1315];
+B_YuleWalkk = [0.0542 -0.0291 -0.0085 -0.0085 -0.0083 0.0225 -0.0260 0.0162 -0.0024 0.0067 -0.0019];
+B_highpass = [1 -2 1];
+A = conv(A_Butterworth, A_YuleWalkk)
+B = conv(B_Butterworth, B_YuleWalkk);
+B = conv(B, B_highpass)
+filter(B, A, [1 2 3 4])
+x = filter(B, A, x);
+%%
 for i = 1:Nwin
 	y=x(N*i+1:(i+1)*N).*win;
     f=fft(y, zero_padding*N);
@@ -57,12 +70,12 @@ end
 surface(graphics(:, :), 'edgecolor', 'none');
 colorbar;
 hold on;
-l = 20
+l = 5
 graphics_maximums = filter(ones(1 ,l)/l, [1], graphics_maximums);
 graphics_maximums = graphics_maximums(1:end);
 plot(graphics_maximums, '*', 'color', 'red');
 
-p=audioplayer(x,Fs);
+p=audioplayer(x_orig,Fs);
 play(p);
 
 y = 1:zero_padding*N/Fscale;
