@@ -1,5 +1,4 @@
 using System;
-using IIR;
 
 public class main
 {
@@ -12,61 +11,35 @@ public class main
         double[] b = {0.0534, -0.2422, 0.4266, -0.3604, 0.1431, 0.0095,
                      -0.1382, 0.2757, -0.3167, 0.2364, -0.1319, 0.0725, -0.0400,
                      0.0141, -0.0019};
-        Filter iir = new Filter(a, b);
-        Console.WriteLine(iir.get_sample_out(1.0));
-        Console.WriteLine(iir.get_sample_out(2.0));
-        Console.WriteLine(iir.get_sample_out(3.0));
-        Console.WriteLine(iir.get_sample_out(4.0));
+        double[] x = {1, 2, 3, 4};
+        IIR iir = new IIR();
+        double [] output = iir.Filter(b, a, x);
+        Console.WriteLine("[{0}]", string.Join(", ", output));
     }
-
 }
 
-namespace IIR
+public class IIR
 {
-   public class Filter
-   {
-        private double[] a;
-        private double[] b;
-        private int d_a;
-        private int d_b;
-        private double[] in_buf;// = new double[3+1];
-        private double[] out_buf;// = new double[2];
-
-        public Filter(double[] a, double[] b)
+    public double[] Filter(double[] b, double[] a, double[] x)
+    {
+        int d_a = a.Length-1;
+        int d_b = b.Length-1;
+        double [] out_buf = new double[x.Length];
+        for(int i = 0; i<x.Length; i++)
         {
-            this.a = a;
-            this.b = b;
-            this.d_a = a.Length-1;
-            this.d_b = b.Length-1;
-            this.in_buf = new double[this.d_b+1];
-            this.out_buf = new double[this.d_a];
-        }
-
-        public double get_sample_out(double sample_in)
-        {
-            double sample_out = 0;
-            for(int i=d_b; i>=0; i--)
+            double output = 0;
+            for(int j=0; j<=d_b; j++)
             {
-                if(i>0)
-                    in_buf[i] = in_buf[i-1];
-                else
-                    in_buf[i] = sample_in;
-                sample_out += in_buf[i]*b[i];
+                if(i>=j)
+                    output += b[j]*x[i-j];
             }
-            for(int i=d_a-1; i>=0; i--)
+            for(int j=1; j<=d_a; j++)
             {
-                sample_out -= out_buf[i]*a[i+1];
-                if(i>0)
-                    out_buf[i] = out_buf[i-1];
-                else
-                    out_buf[0] = sample_out;
-
+                if(i>=j)
+                    output -= a[j]*out_buf[i-j];
             }
-            return sample_out;
+            out_buf[i] = output;
         }
-
-   }
-
-
+        return out_buf;
+    }
 }
-
